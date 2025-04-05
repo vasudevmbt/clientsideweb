@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #3498db;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        main {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .search-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .results-section {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        #search-form {
+            margin: 1rem 0;
+        }
+
+        input[type="text"] {
+            padding: 0.5rem;
+            width: 70%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #history-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .history-item {
+            background-color: #eee;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .history-item:hover {
+            background-color: #ddd;
+        }
+
+        #current-weather {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        #forecast {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #forecast-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .forecast-card {
+            background-color: #3498db;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 150px;
+            max-width: 200px;
+            margin-bottom: 1rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+            background-color: #3498db;
+            color: white;
+        }
+
+        .weather-detail {
+            margin: 0.5rem 0;
+        }
+
+        #city-name {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #weather-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .settings-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #ddd;
+        }
+
+        .units-toggle {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .units-btn {
+            padding: 0.25rem 0.5rem;
+            background-color: #eee;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Weather Dashboard</h1>
+    </header>
+    
+    <main>
+        <section class="search-section">
+            <h2>Search for a City</h2>
+            <form id="search-form">
+                <input type="text" id="city-input" placeholder="Enter city name" required>
+                <button type="submit">Search</button>
+            </form>
+            <p id="error-message" class="error-message hidden"></p>
+            
+            <div class="settings-section">
+                <h3>Settings</h3>
+                <div>
+                    <label>Temperature Units:</label>
+                    <div class="units-toggle">
+                        <button type="button" class="units-btn active" data-units="metric">Celsius</button>
+                        <button type="button" class="units-btn" data-units="imperial">Fahrenheit</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="search-history">
+                <h3>Search History</h3>
+                <ul id="history-list"></ul>
+                <button type="button" id="clear-history">Clear History</button>
+            </div>
+        </section>
+        
+        <section class="results-section">
+            <div id="current-weather" class="hidden">
+                <h2 id="city-name"></h2>
+                <p id="current-date"></p>
+                <div id="weather-info">
+                    <div class="weather-detail">
+                        <strong>Temperature:</strong> <span id="temperature"></span>
+                    </div>
+                    <div class="weather-detail">
+                        <strong>Feels Like:</strong> <span id="feels-like"></span>
+                    </div>
+                    <div class="weather-detail">
+                        <strong>Weather:</strong> <span id="weather-description"></span>
+                    </div>
+                    <div class="weather-detail">
+                        <strong>Humidity:</strong> <span id="humidity"></span>
+                    </div>
+                    <div class="weather-detail">
+                        <strong>Wind Speed:</strong> <span id="wind-speed"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="forecast" class="hidden">
+                <h2>5-Day Forecast</h2>
+                <div id="forecast-container"></div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 Weather Dashboard | Using OpenWeatherMap API</p>
+    </footer>
+
+    <script>
+        // API Key for OpenWeatherMap - Replace with your own key when deploying
+        const API_KEY = 'b8460a64ab90fa0394e9dde69c95e996'; 
+        
+        // DOM Elements
+        const searchForm = document.getElementById('search-form');
+        const cityInput = document.getElementById('city-input');
+        const historyList = document.getElementById('history-list');
+        const currentWeather = document.getElementById('current-weather');
+        const forecast = document.getElementById('forecast');
+        const cityNameEl = document.getElementById('city-name');
+        const currentDateEl = document.getElementById('current-date');
+        const temperatureEl = document.getElementById('temperature');
+        const feelsLikeEl = document.getElementById('feels-like');
+        const weatherDescriptionEl = document.getElementById('weather-description');
+        const humidityEl = document.getElementById('humidity');
+        const windSpeedEl = document.getElementById('wind-speed');
+        const forecastContainer = document.getElementById('forecast-container');
+        const errorMessage = document.getElementById('error-message');
+        const clearHistoryBtn = document.getElementById('clear-history');
+        const unitButtons = document.querySelectorAll('.units-btn');
+        
+        // App State
+        let searchHistory = [];
+        let units = 'metric'; // Default to metric (Celsius)
+        
+        // Initialize the app
+        function init() {
+            loadSearchHistory();
+            loadUserPreferences();
+            displaySearchHistory();
+            
+            // Add event listeners
+            searchForm.addEventListener('submit', handleSearch);
+            clearHistoryBtn.addEventListener('click', clearSearchHistory);
+            
+            // Unit toggle buttons
+            unitButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    setUnits(button.dataset.units);
+                    // If we have a city displayed, refresh the data with new units
+                    if (!currentWeather.classList.contains('hidden')) {
+                        const lastCity = searchHistory[0];
+                        if (lastCity) {
+                            getWeatherData(lastCity);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Handle search form submission
+        function handleSearch(e) {
+            e.preventDefault();
+            const city = cityInput.value.trim();
+            
+            if (city) {
+                getWeatherData(city);
+                cityInput.value = '';
+            }
+        }
+        
+        // Fetch weather data from OpenWeatherMap API
+        async function getWeatherData(city) {
+            try {
+                // Show loading state
+                errorMessage.classList.add('hidden');
+                currentWeather.classList.add('hidden');
+                forecast.classList.add('hidden');
+                
+                // Get current weather
+                const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${units}&appid=${API_KEY}`;
+                const currentWeatherResponse = await fetch(currentWeatherUrl);
+                
+                if (!currentWeatherResponse.ok) {
+                    throw new Error('City not found. Please try again.');
+                }
+                
+                const currentWeatherData = await currentWeatherResponse.json();
+                
+                // Get 5-day forecast
+                const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=${units}&appid=${API_KEY}`;
+                const forecastResponse = await fetch(forecastUrl);
+                const forecastData = await forecastResponse.json();
+                
+                // Display the data
+                displayCurrentWeather(currentWeatherData);
+                displayForecast(forecastData);
+                
+                // Add to search history
+                addToSearchHistory(city);
+                
+                // Show results
+                currentWeather.classList.remove('hidden');
+                forecast.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                errorMessage.textContent = error.message || 'Error fetching weather data. Please try again.';
+                errorMessage.classList.remove('hidden');
+            }
+        }
+        
+        // Display current weather data
+        function displayCurrentWeather(data) {
+            const cityName = data.name;
+            const country = data.sys.country;
+            const date = new Date().toLocaleDateString();
+            const temp = data.main.temp;
+            const feelsLike = data.main.feels_like;
+            const weatherDescription = data.weather[0].description;
+            const humidity = data.main.humidity;
+            const windSpeed = data.wind.speed;
+            const weatherIcon = data.weather[0].icon;
+            
+            // Update DOM elements
+            cityNameEl.innerHTML = `${cityName}, ${country} <img id="weather-icon" src="https://openweathermap.org/img/wn/${weatherIcon}.png" alt="${weatherDescription}">`;
+            currentDateEl.textContent = date;
+            temperatureEl.textContent = `${temp.toFixed(1)} ${units === 'metric' ? '°C' : '°F'}`;
+            feelsLikeEl.textContent = `${feelsLike.toFixed(1)} ${units === 'metric' ? '°C' : '°F'}`;
+            weatherDescriptionEl.textContent = capitalizeFirstLetter(weatherDescription);
+            humidityEl.textContent = `${humidity}%`;
+            windSpeedEl.textContent = `${windSpeed} ${units === 'metric' ? 'm/s' : 'mph'}`;
+        }
+        
+        // Display 5-day forecast
+        function displayForecast(data) {
+            forecastContainer.innerHTML = '';
+            
+            // Group forecast data by day (we want one forecast per day)
+            const dailyForecasts = {};
+            
+            data.list.forEach(item => {
+                const date = new Date(item.dt * 1000).toLocaleDateString();
+                
+                // We only take the first forecast for each day (typically at noon)
+                if (!dailyForecasts[date] && Object.keys(dailyForecasts).length < 5) {
+                    dailyForecasts[date] = item;
+                }
+            });
+            
+            // Create forecast cards
+            Object.values(dailyForecasts).forEach(item => {
+                const date = new Date(item.dt * 1000).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                const temp = item.main.temp;
+                const weatherDescription = item.weather[0].description;
+                const weatherIcon = item.weather[0].icon;
+                const humidity = item.main.humidity;
+                const windSpeed = item.wind.speed;
+                
+                const forecastCard = document.createElement('div');
+                forecastCard.className = 'forecast-card';
+                forecastCard.innerHTML = `
+                    <h3>${date}</h3>
+                    <img src="https://openweathermap.org/img/wn/${weatherIcon}.png" alt="${weatherDescription}">
+                    <p>${capitalizeFirstLetter(weatherDescription)}</p>
+                    <p>Temp: ${temp.toFixed(1)} ${units === 'metric' ? '°C' : '°F'}</p>
+                    <p>Humidity: ${humidity}%</p>
+                    <p>Wind: ${windSpeed} ${units === 'metric' ? 'm/s' : 'mph'}</p>
+                `;
+                
+                forecastContainer.appendChild(forecastCard);
+            });
+        }
+        
+        // Add city to search history
+        function addToSearchHistory(city) {
+            // Remove if already exists
+            searchHistory = searchHistory.filter(item => item.toLowerCase() !== city.toLowerCase());
+            
+            // Add to beginning of array
+            searchHistory.unshift(city);
+            
+            // Keep only the last 10 searches
+            if (searchHistory.length > 10) {
+                searchHistory.pop();
+            }
+            
+            // Save to localStorage
+            saveSearchHistory();
+            
+            // Update display
+            displaySearchHistory();
+        }
+        
+        // Display search history
+        function displaySearchHistory() {
+            historyList.innerHTML = '';
+            
+            searchHistory.forEach(city => {
+                const listItem = document.createElement('li');
+                listItem.className = 'history-item';
+                listItem.textContent = city;
+                listItem.addEventListener('click', () => {
+                    getWeatherData(city);
+                });
+                
+                historyList.appendChild(listItem);
+            });
+        }
+        
+        // Save search history to localStorage
+        function saveSearchHistory() {
+            localStorage.setItem('weatherAppHistory', JSON.stringify(searchHistory));
+        }
+        
+        // Load search history from localStorage
+        function loadSearchHistory() {
+            const savedHistory = localStorage.getItem('weatherAppHistory');
+            if (savedHistory) {
+                searchHistory = JSON.parse(savedHistory);
+            }
+        }
+        
+        // Clear search history
+        function clearSearchHistory() {
+            searchHistory = [];
+            saveSearchHistory();
+            displaySearchHistory();
+        }
+        
+        // Set temperature units and save preference
+        function setUnits(newUnits) {
+            units = newUnits;
+            
+            // Update UI
+            unitButtons.forEach(button => {
+                if (button.dataset.units === newUnits) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('weatherAppUnits', units);
+        }
+        
+        // Load user preferences from localStorage
+        function loadUserPreferences() {
+            const savedUnits = localStorage.getItem('weatherAppUnits');
+            if (savedUnits) {
+                setUnits(savedUnits);
+            }
+        }
+        
+        // Utility function to capitalize first letter
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+        
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
